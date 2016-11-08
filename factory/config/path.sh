@@ -1,0 +1,9 @@
+#!/bin/bash
+LOG_DIR=/opt/mfg/ui/log
+MFG_DIR=/opt/mfg/ui
+UTILS_DIR=/opt/mfg/ui/utils
+SCRIPTS_DIR=/opt/mfg/ui/scripts
+TESTS_DIR=/opt/mfg/ui/tests
+WAVS_DIR=/opt/mfg/ui/wavs
+PICS_DIR=/opt/mfg/ui/pics
+FW_DIR=/opt/mfg/ui/firmware

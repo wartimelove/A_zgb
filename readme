@@ -1,0 +1,32 @@
+
+SDT ZGB factory test image version: 
+<factory bundle version>_<tag-description>_date.time ex: rc4_v2.0-4-g1fbf789_20110923.1900
+
+SDT ZGB factory test image for m2:
+ex: chromiumos_factory_test_zgb_m2_rc4_v2.0-4-g1fbf789_20110923.1900_image.bin.tbz2
+
+How to build factory test image?
+
+./build_image <base-image> <bundle-version> 
+
+will build the image associated <bundle-version> into the folder "build" 
+
+It will do follow things:
+
+1. copy base-image to the temporary folder "tmp".
+
+2. mount its stateful partition as tmp/s
+
+3. mount its root partition as tmp/m  
+
+4. build factory scripts to make them executeable 
+
+5. merge the factory package into uncompressed partitions. 
+
+6. umount the target image. 
+
+7. rename it follow sdt factory test image name rule.
+
+8. move it to the folder "build".
+
+9. remove the folder "tmp"

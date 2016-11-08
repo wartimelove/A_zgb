@@ -1,0 +1,27 @@
+# Copyright (c) 2010 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+description   "Chrome OS factory startup stub"
+author        "chromium-os-dev@googlegroups.com"
+
+start on started system-services 
+stop on starting halt or starting reboot
+
+script
+mount -o remount,rw /
+setterm -powersave off
+setterm -blank 0
+
+if [ ! -e /opt/mfg/ui/log/frt.end ]; then
+    if [ ! -e /opt/mfg/ui/log/s5.end ]; then
+        eval $(/opt/mfg/ui/startx.sh)
+        python /opt/mfg/ui/pydirs/s5.pyc >>/opt/mfg/ui/log/frt.log 2>&1
+    else
+        eval $(/opt/mfg/ui/startx.sh)
+        bluetoothd &
+        python /opt/mfg/ui/frt.pyc >> /opt/mfg/ui/log/frt.log 2>&1
+    fi    
+fi
+
+end script

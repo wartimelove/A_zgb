@@ -1,0 +1,69 @@
+#!/bin/sh
+
+SCRIPT=$0
+RORW="ro"
+PATH="/usr/sbin:/sbin:$PATH"
+export PATH
+set -e
+
+if [ "$1" = "-rw" ]; then
+  RORW="rw"
+  shift
+fi
+
+if [ "$#" != 3 ]; then
+  echo "Usage: $SCRIPT [-rw] image_file partition_index mount_point"
+  exit 1
+fi
+
+IMAGE="$1"
+PARTNO="$2"
+MOUNT_POINT="$3"
+
+has_command() {
+  type "$1" >/dev/null 2>&1
+}
+
+die() {
+  echo "ERROR: $*" 1>&2
+  exit 1
+}
+
+# Finds the best partition tool and print partition offset
+image_part_offset() {
+  local file="$1"
+  local partno="$2"
+
+  if has_command cgpt; then
+    echo $(( $(cgpt show -i "$partno" -b "$file") * 512 ))
+  else
+    sudo parted -m "$file" unit b print |
+      awk -F ':' "/^$partno:/ { print int(\$2) }"
+  fi
+}
+
+# Finds the best partition tool and print partition size
+image_part_size() {
+  local file="$1"
+  local partno="$2"
+
+  if has_command cgpt; then
+    echo $(( $(cgpt show -i "$partno" -s "$file") * 512 ))
+  else
+    sudo parted -m "$file" unit b print |
+      awk -F ':' "/^$partno:/ { print int(\$4) }"
+  fi
+}
+
+# Basic checking
+[ -f "$IMAGE" ] || die "Cannot find image file $IMAGE."
+[ -d "$MOUNT_POINT" ] || die "invalid mount point: $MOUNT_POINT"
+
+part_size="$(image_part_offset "$IMAGE" "$PARTNO" 2>/dev/null)"
+if [ -z "$part_size" ] || [ "$part_size" -le "0" ]; then
+  die "Invalid image file $IMAGE for partition #$PARTNO."
+fi
+
+sudo mount -o "$RORW,loop,offset=$(
+    image_part_offset "$IMAGE" "$PARTNO"),sizelimit=$(
+    image_part_size "$IMAGE" "$PARTNO")" "$IMAGE" "$MOUNT_POINT"
